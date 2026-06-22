@@ -1,0 +1,145 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id               String         @id @default(uuid())
+  name             String
+  slug             String         @unique
+  sku              String         @unique
+  description      String
+  price            Float
+  promotionalPrice Float?
+  categoryId       String
+  category         Category       @relation(fields: [categoryId], references: [id])
+  stock            Int
+  sizes            String         // Comma-separated values, e.g., "P,M,G,GG"
+  colors           String         // Comma-separated values, e.g., "Preto,Branco"
+  variations       String?        // Extra text metadata
+  featured         Boolean        @default(false)
+  plusSize         Boolean        @default(false)
+  active           Boolean        @default(true)
+  mainImage        String         // Path inside /uploads
+  images           ProductImage[]
+  orderItems       OrderItem[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String   // Path inside /uploads
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  order     Int       @default(0)
+  active    Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  orderNumber      String?
+  customerName     String
+  customerWhatsapp String
+  cep              String?
+  street           String?
+  number           String?
+  neighborhood     String?
+  city             String
+  state            String
+  complement       String?
+  deliveryMethod   String
+  paymentMethod    String      @default("PIX")
+  subtotal         Float       @default(0.00)
+  shippingFee      Float       @default(0.00)
+  total            Float
+  status           String      @default("Aguardando pagamento")
+  notes            String?
+  internalNotes    String?
+  items            OrderItem[]
+  createdAt        DateTime    @default(now())
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productName String
+  size        String
+  color       String
+  quantity    Int
+  unitPrice   Float
+  subtotal    Float
+}
+
+model StoreSettings {
+  id              String  @id @default("settings")
+  storeName       String  @default("Minha Loja Atacado")
+  logo            String?
+  favicon         String?
+  whatsapp        String  @default("5511999999999")
+  instagram       String?
+  email           String?
+  cnpj            String?
+  address         String?
+  description     String?
+  minimumItems    Int     @default(6)
+  pixKey          String  @default("5511999999999")
+  pixKeyType      String  @default("TELEFONE") // CPF, CNPJ, EMAIL, TELEFONE, ALEATORIA
+  pixReceiverName String  @default("Recebedor Pix")
+  pixBank         String?
+  qrCodePix       String?
+  originAddress   String? @default("Rua Principal, 100")
+  originCity      String? @default("Santa Cruz do Capibaribe")
+  originState     String? @default("PE")
+  originCep       String? @default("55190-000")
+  shippingMode    String  @default("FALLBACK")
+  fallbackShippingFee Float @default(20.00)
+  primaryColor    String  @default("#e11d48") // Rose 600
+  secondaryColor  String  @default("#1e293b") // Slate 800
+  footerText      String?
+  visits          Int     @default(1450)
+}
+
+model Banner {
+  id         String   @id @default(uuid())
+  title      String?
+  subtitle   String?
+  image      String   // Path inside /uploads
+  buttonText String?
+  buttonLink String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model DeliveryMethod {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  fixedFee     Float?
+  requiresNote Boolean  @default(false)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
