@@ -1,3 +1,4 @@
+// Database provider configuration for Supabase PostgreSQL
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
