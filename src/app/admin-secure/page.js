@@ -179,7 +179,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { stats, recentOrders } = data;
+  const { stats, recentOrders, fiscalStats } = data;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -260,26 +260,64 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Resumo de Estoque */}
-        <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Status do Inventário</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '8px' }}>
-              <span style={{ color: 'var(--neutral-500)' }}>Total de Produtos</span>
-              <strong style={{ color: 'var(--neutral-800)' }}>{stats.totalProducts} itens</strong>
+        {/* Resumos Laterais */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Resumo de Estoque */}
+          <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Status do Inventário</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--neutral-50)' ? 'var(--neutral-500)' : 'inherit' }}>Total de Produtos</span>
+                <strong style={{ color: 'var(--neutral-800)' }}>{stats.totalProducts} itens</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--neutral-50)' ? 'var(--neutral-500)' : 'inherit' }}>Produtos sem Estoque</span>
+                <strong style={{ color: stats.lowStock > 0 ? 'var(--color-danger)' : 'var(--neutral-800)' }}>{stats.lowStock} itens</strong>
+              </div>
+              <Link 
+                href="/admin-secure/produtos" 
+                className="btn-detail" 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', marginTop: '10px', borderRadius: 'var(--radius-sm)' }}
+              >
+                Gerenciar Produtos <ArrowRight size={14} />
+              </Link>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '8px' }}>
-              <span style={{ color: 'var(--neutral-500)' }}>Produtos sem Estoque</span>
-              <strong style={{ color: stats.lowStock > 0 ? 'var(--color-danger)' : 'var(--neutral-800)' }}>{stats.lowStock} itens</strong>
-            </div>
-            <Link 
-              href="/admin-secure/produtos" 
-              className="btn-detail" 
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', marginTop: '10px', borderRadius: 'var(--radius-sm)' }}
-            >
-              Gerenciar Produtos <ArrowRight size={14} />
-            </Link>
           </div>
+
+          {/* Resumo Fiscal (NF-e) */}
+          {fiscalStats && (
+            <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Resumo Fiscal (NF-e)</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--neutral-500)' }}>Notas Autorizadas</span>
+                  <strong style={{ color: 'var(--color-success)' }}>{fiscalStats.authorized} notas</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--neutral-500)' }}>Processando</span>
+                  <strong style={{ color: 'var(--color-warning)' }}>{fiscalStats.processing} notas</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--neutral-500)' }}>Rejeitadas</span>
+                  <strong style={{ color: fiscalStats.rejected > 0 ? 'var(--color-danger)' : 'var(--neutral-800)' }}>{fiscalStats.rejected} notas</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--neutral-500)' }}>Canceladas</span>
+                  <strong style={{ color: 'var(--neutral-600)' }}>{fiscalStats.cancelled} notas</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid var(--neutral-100)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--neutral-500)' }}>Faturado (Nota)</span>
+                  <strong style={{ color: 'var(--color-success)' }}>R$ {fiscalStats.totalInvoiced.toFixed(2)}</strong>
+                </div>
+                {fiscalStats.paidWithoutInvoice > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', backgroundColor: '#fef2f2', padding: '6px 8px', borderRadius: '4px', color: '#b91c1c', fontWeight: '500', marginTop: '4px' }}>
+                    <span>Pagos sem Nota:</span>
+                    <strong>{fiscalStats.paidWithoutInvoice} pedidos</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

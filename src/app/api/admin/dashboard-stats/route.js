@@ -17,11 +17,40 @@ export async function GET() {
     // 2. Total Vendido (Somatório dos Pedidos Pagos ou Concluídos)
     const paidOrders = await prisma.order.findMany({
       where: {
-        status: { in: ['PAID', 'SHIPPED', 'FINISHED'] },
+        status: { in: ['PAID', 'SHIPPED', 'FINISHED', 'Pago', 'Enviado', 'Finalizado'] },
       },
       select: { total: true },
     });
     const totalSales = paidOrders.reduce((sum, order) => sum + order.total, 0);
+
+    // 2.1 Estatísticas de Notas Fiscais Eletrônicas (NF-e)
+    const fiscalAuthorized = await prisma.order.count({
+      where: { fiscalStatus: 'nota_autorizada' }
+    });
+    const fiscalProcessing = await prisma.order.count({
+      where: { fiscalStatus: 'nota_em_processamento' }
+    });
+    const fiscalRejected = await prisma.order.count({
+      where: { fiscalStatus: { in: ['nota_rejeitada', 'erro_emissao'] } }
+    });
+    const fiscalCancelled = await prisma.order.count({
+      where: { fiscalStatus: 'nota_cancelada' }
+    });
+
+    // Pedidos pagos sem nota fiscal
+    const paidWithoutInvoice = await prisma.order.count({
+      where: {
+        status: { in: ['PAID', 'SHIPPED', 'FINISHED', 'Pago', 'Enviado', 'Finalizado'] },
+        fiscalStatus: { in: ['nota_nao_emitida', 'erro_emissao', 'nota_rejeitada'] }
+      }
+    });
+
+    // Valor total faturado com nota fiscal
+    const invoicedOrders = await prisma.order.findMany({
+      where: { fiscalStatus: 'nota_autorizada' },
+      select: { total: true }
+    });
+    const totalInvoiced = invoicedOrders.reduce((sum, order) => sum + order.total, 0);
 
     // 3. Pedidos Recentes (Últimos 5)
     const recentOrders = await prisma.order.findMany({
@@ -78,6 +107,14 @@ export async function GET() {
         pendingOrders,
         totalSales,
         visits: settings?.visits || 1450,
+      },
+      fiscalStats: {
+        authorized: fiscalAuthorized,
+        processing: fiscalProcessing,
+        rejected: fiscalRejected,
+        cancelled: fiscalCancelled,
+        paidWithoutInvoice: paidWithoutInvoice,
+        totalInvoiced: totalInvoiced,
       },
       recentOrders,
       chartData,

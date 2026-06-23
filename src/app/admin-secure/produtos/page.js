@@ -47,6 +47,17 @@ export default function AdminProducts() {
   const [caracteristicas, setCaracteristicas] = useState('');
   const [observacao, setObservacao] = useState('');
 
+  // Campos Fiscais
+  const [ncm, setNcm] = useState('');
+  const [cfop, setCfop] = useState('');
+  const [cst, setCst] = useState('');
+  const [origin, setOrigin] = useState('0');
+  const [unit, setUnit] = useState('UN');
+  const [weight, setWeight] = useState('');
+  const [ean, setEan] = useState('');
+  const [taxRate, setTaxRate] = useState('');
+  const [fiscalNotes, setFiscalNotes] = useState('');
+
   // Estados de Upload
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
@@ -102,6 +113,17 @@ export default function AdminProducts() {
       setMainImage(product.mainImage);
       setGalleryImages(product.images?.map(img => img.url) || []);
 
+      // Carregar Campos Fiscais
+      setNcm(product.ncm || '');
+      setCfop(product.cfop || '');
+      setCst(product.cst || '');
+      setOrigin(product.origin !== null && product.origin !== undefined ? product.origin.toString() : '0');
+      setUnit(product.unit || 'UN');
+      setWeight(product.weight !== null && product.weight !== undefined ? product.weight.toString() : '');
+      setEan(product.ean || '');
+      setTaxRate(product.taxRate !== null && product.taxRate !== undefined ? product.taxRate.toString() : '');
+      setFiscalNotes(product.fiscalNotes || '');
+
       // Deserializar variations JSON
       let parsed = { veste: '', tecido: '', gramatura: '', caracteristicas: [], observacao: '', descricaoCurta: '', colorStock: null };
       if (product.variations) {
@@ -152,6 +174,17 @@ export default function AdminProducts() {
       setActive(true);
       setMainImage('');
       setGalleryImages([]);
+
+      // Resetar Campos Fiscais
+      setNcm('');
+      setCfop('');
+      setCst('');
+      setOrigin('0');
+      setUnit('UN');
+      setWeight('');
+      setEan('');
+      setTaxRate('');
+      setFiscalNotes('');
 
       setVeste('');
       setShortDesc('');
@@ -221,7 +254,16 @@ export default function AdminProducts() {
       plusSize,
       active,
       mainImage,
-      galleryImages
+      galleryImages,
+      ncm,
+      cfop,
+      cst,
+      origin: origin !== '' ? parseInt(origin) : 0,
+      unit,
+      weight: weight !== '' ? parseFloat(weight) : null,
+      ean,
+      taxRate: taxRate !== '' ? parseFloat(taxRate) : null,
+      fiscalNotes
     };
 
     try {
@@ -729,6 +771,64 @@ export default function AdminProducts() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Dados Fiscais */}
+                <div style={{ border: '1px solid var(--neutral-200)', padding: '20px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: 'var(--neutral-50)' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--neutral-700)', textTransform: 'uppercase', borderBottom: '1px solid var(--neutral-200)', paddingBottom: '8px' }}>Dados Fiscais (NFe)</h4>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>NCM (Ex: 61091000)</label>
+                      <input type="text" className="form-input" placeholder="8 dígitos" value={ncm} onChange={(e) => setNcm(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>CFOP Padrão (Ex: 5102)</label>
+                      <input type="text" className="form-input" placeholder="4 dígitos" value={cfop} onChange={(e) => setCfop(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>CST / CSOSN (Ex: 102)</label>
+                      <input type="text" className="form-input" placeholder="Código CST" value={cst} onChange={(e) => setCst(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Unidade (Ex: UN, PC)</label>
+                      <input type="text" className="form-input" placeholder="UN" value={unit} onChange={(e) => setUnit(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: '12px', alignItems: 'center' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Origem da Mercadoria</label>
+                      <select className="form-select" style={{ padding: '8px' }} value={origin} onChange={(e) => setOrigin(e.target.value)}>
+                        <option value="0">0 - Nacional</option>
+                        <option value="1">1 - Estrangeira - Importação direta</option>
+                        <option value="2">2 - Estrangeira - Adquirida mercado interno</option>
+                        <option value="3">3 - Nacional - Conteúdo Import. 40% a 70%</option>
+                        <option value="4">4 - Nacional - Produção PPB</option>
+                        <option value="5">5 - Nacional - Conteúdo Import. &lt;= 40%</option>
+                        <option value="6">6 - Estrangeira - Imp. direta sem similar</option>
+                        <option value="7">7 - Estrangeira - Mercado interno sem similar</option>
+                        <option value="8">8 - Nacional - Conteúdo Import. &gt; 70%</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Peso (kg)</label>
+                      <input type="number" step="0.001" className="form-input" placeholder="Ex: 0.150" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>EAN / Código Barras</label>
+                      <input type="text" className="form-input" placeholder="GTIN/EAN" value={ean} onChange={(e) => setEan(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Alíquota ICMS (%)</label>
+                      <input type="number" step="0.01" className="form-input" placeholder="Ex: 4.00" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Observações Fiscais do Item</label>
+                    <input type="text" className="form-input" placeholder="Mensagem fiscal específica para o item" value={fiscalNotes} onChange={(e) => setFiscalNotes(e.target.value)} />
+                  </div>
                 </div>
 
                 {/* Destaque e Status Visível */}

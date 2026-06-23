@@ -48,6 +48,15 @@ export async function POST(request) {
       active,
       mainImage,
       galleryImages, // array of image paths
+      ncm,
+      cfop,
+      cst,
+      origin,
+      unit,
+      weight,
+      ean,
+      taxRate,
+      fiscalNotes,
     } = body;
 
     if (!name || !sku || !categoryId || price === undefined || stock === undefined || !mainImage) {
@@ -81,6 +90,15 @@ export async function POST(request) {
         plusSize: !!plusSize,
         active: active !== false,
         mainImage,
+        ncm: ncm || null,
+        cfop: cfop || null,
+        cst: cst || null,
+        origin: (origin !== undefined && origin !== null && origin !== '') ? parseInt(origin) : null,
+        unit: unit || null,
+        weight: (weight !== undefined && weight !== null && weight !== '') ? parseFloat(weight) : null,
+        ean: ean || null,
+        taxRate: (taxRate !== undefined && taxRate !== null && taxRate !== '') ? parseFloat(taxRate) : null,
+        fiscalNotes: fiscalNotes || null,
       },
     });
 

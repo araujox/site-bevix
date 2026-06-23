@@ -36,6 +36,17 @@ model Product {
   orderItems       OrderItem[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  // Campos Fiscais
+  ncm              String?
+  cfop             String?
+  cst              String?
+  origin           Int?
+  unit             String?
+  weight           Float?
+  ean              String?
+  taxRate          Float?
+  fiscalNotes      String?
 }
 
 model ProductImage {
@@ -78,6 +89,26 @@ model Order {
   internalNotes    String?
   items            OrderItem[]
   createdAt        DateTime    @default(now())
+
+  // Campos Fiscais do Cliente
+  customerCpfCnpj  String?
+  customerEmail    String?
+
+  // Status e Retornos Fiscais
+  fiscalStatus       String    @default("nota_nao_emitida")
+  fiscalProvider     String?
+  fiscalEnvironment  String?
+  fiscalInvoiceId    String?
+  fiscalNumber       String?
+  fiscalSeries       String?
+  fiscalAccessKey    String?
+  fiscalProtocol     String?
+  fiscalIssuedAt     DateTime?
+  fiscalPdfUrl       String?
+  fiscalXmlUrl       String?
+  fiscalRawResponse  String?
+  fiscalErrorMessage String?
+  fiscalLogs         String?
 }
 
 model OrderItem {

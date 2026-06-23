@@ -33,6 +33,15 @@ export async function PUT(request, { params }) {
       active,
       mainImage,
       galleryImages, // array of image paths
+      ncm,
+      cfop,
+      cst,
+      origin,
+      unit,
+      weight,
+      ean,
+      taxRate,
+      fiscalNotes,
     } = body;
 
     // Verificar se produto existe
@@ -57,6 +66,15 @@ export async function PUT(request, { params }) {
       plusSize: plusSize !== undefined ? !!plusSize : existingProduct.plusSize,
       active: active !== undefined ? !!active : existingProduct.active,
       mainImage: mainImage !== undefined ? mainImage : existingProduct.mainImage,
+      ncm: ncm !== undefined ? ncm : existingProduct.ncm,
+      cfop: cfop !== undefined ? cfop : existingProduct.cfop,
+      cst: cst !== undefined ? cst : existingProduct.cst,
+      origin: origin !== undefined ? ((origin !== null && origin !== '') ? parseInt(origin) : null) : existingProduct.origin,
+      unit: unit !== undefined ? unit : existingProduct.unit,
+      weight: weight !== undefined ? ((weight !== null && weight !== '') ? parseFloat(weight) : null) : existingProduct.weight,
+      ean: ean !== undefined ? ean : existingProduct.ean,
+      taxRate: taxRate !== undefined ? ((taxRate !== null && taxRate !== '') ? parseFloat(taxRate) : null) : existingProduct.taxRate,
+      fiscalNotes: fiscalNotes !== undefined ? fiscalNotes : existingProduct.fiscalNotes,
     };
 
     if (name && name !== existingProduct.name) {

@@ -18,6 +18,24 @@ export default function AdminOrders() {
   const [newStatus, setNewStatus] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
 
+  // Campos do Cliente / Endereço para Edição
+  const [customerName, setCustomerName] = useState('');
+  const [customerWhatsapp, setCustomerWhatsapp] = useState('');
+  const [customerCpfCnpj, setCustomerCpfCnpj] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [cep, setCep] = useState('');
+  const [street, setStreet] = useState('');
+  const [number, setNumber] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [complement, setComplement] = useState('');
+
+  // Estados Fiscais
+  const [isFiscalLoading, setIsFiscalLoading] = useState(false);
+  const [fiscalJustification, setFiscalJustification] = useState('');
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,7 +67,18 @@ export default function AdminOrders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: newStatus,
-          internalNotes: internalNotes
+          internalNotes: internalNotes,
+          customerName,
+          customerWhatsapp,
+          customerCpfCnpj,
+          customerEmail,
+          cep,
+          street,
+          number,
+          neighborhood,
+          city,
+          state,
+          complement
         })
       });
 
@@ -67,6 +96,43 @@ export default function AdminOrders() {
       alert('Erro ao salvar alterações.');
     } finally {
       setSavingStatus(false);
+    }
+  };
+
+  const handleFiscalAction = async (orderId, action, extraBody = {}) => {
+    setIsFiscalLoading(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/fiscal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          ...extraBody
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Atualizar lista local
+        setOrders(prev => prev.map(o => o.id === orderId ? data.order : o));
+        setSelectedOrder(data.order);
+        alert(
+          action === 'emit' ? 'Nota Fiscal emitida / enviada com sucesso!' :
+          action === 'query' ? 'Consulta realizada com sucesso!' :
+          'Nota Fiscal cancelada com sucesso!'
+        );
+        setIsCancelModalOpen(false);
+      } else {
+        if (data.validationErrors) {
+          alert('Erros de Validação Fiscal:\n' + data.validationErrors.join('\n'));
+        } else {
+          alert('Erro na operação fiscal: ' + (data.error || 'Erro desconhecido.'));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao executar ação fiscal.');
+    } finally {
+      setIsFiscalLoading(false);
     }
   };
 
@@ -112,6 +178,18 @@ export default function AdminOrders() {
     setSelectedOrder(order);
     setNewStatus(order.status);
     setInternalNotes(order.internalNotes || '');
+    setCustomerName(order.customerName || '');
+    setCustomerWhatsapp(order.customerWhatsapp || '');
+    setCustomerCpfCnpj(order.customerCpfCnpj || '');
+    setCustomerEmail(order.customerEmail || '');
+    setCep(order.cep || '');
+    setStreet(order.street || '');
+    setNumber(order.number || '');
+    setNeighborhood(order.neighborhood || '');
+    setCity(order.city || '');
+    setState(order.state || '');
+    setComplement(order.complement || '');
+    setFiscalJustification('');
   };
 
   // Imprimir/Exportar Resumo do Pedido em Texto Limpo
@@ -358,6 +436,176 @@ export default function AdminOrders() {
                 </div>
               </div>
 
+              {/* Painel da Nota Fiscal Eletrônica (NF-e) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', border: '1px solid var(--neutral-200)', padding: '16px', borderRadius: 'var(--radius-md)', backgroundColor: '#f8fafc' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--neutral-200)', paddingBottom: '8px' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--neutral-700)', textTransform: 'uppercase' }}>Nota Fiscal Eletrônica (NF-e)</h4>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '700', 
+                    padding: '4px 8px', 
+                    borderRadius: '4px',
+                    backgroundColor: 
+                      selectedOrder.fiscalStatus === 'nota_autorizada' ? '#dcfce7' :
+                      selectedOrder.fiscalStatus === 'nota_em_processamento' ? '#fef9c3' :
+                      selectedOrder.fiscalStatus === 'nota_cancelada' ? '#f1f5f9' :
+                      ['nota_rejeitada', 'erro_emissao'].includes(selectedOrder.fiscalStatus) ? '#fee2e2' : '#e5e7eb',
+                    color: 
+                      selectedOrder.fiscalStatus === 'nota_autorizada' ? '#15803d' :
+                      selectedOrder.fiscalStatus === 'nota_em_processamento' ? '#a16207' :
+                      selectedOrder.fiscalStatus === 'nota_cancelada' ? '#475569' :
+                      ['nota_rejeitada', 'erro_emissao'].includes(selectedOrder.fiscalStatus) ? '#b91c1c' : '#4b5563',
+                  }}>
+                    {
+                      selectedOrder.fiscalStatus === 'nota_autorizada' ? 'Autorizada (SEFAZ)' :
+                      selectedOrder.fiscalStatus === 'nota_em_processamento' ? 'Processando' :
+                      selectedOrder.fiscalStatus === 'nota_cancelada' ? 'Cancelada' :
+                      selectedOrder.fiscalStatus === 'nota_rejeitada' ? 'Rejeitada' :
+                      selectedOrder.fiscalStatus === 'erro_emissao' ? 'Erro na Emissão' : 'Não Emitida'
+                    }
+                  </span>
+                </div>
+
+                {/* Mensagem de Erro se houver */}
+                {selectedOrder.fiscalErrorMessage && (
+                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '10px 12px', borderRadius: '4px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span><strong>Rejeição:</strong> {selectedOrder.fiscalErrorMessage}</span>
+                  </div>
+                )}
+
+                {/* Detalhes se a nota já foi emitida */}
+                {selectedOrder.fiscalInvoiceId && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '13px', color: 'var(--neutral-600)' }}>
+                    <div><strong>Nº da Nota:</strong> {selectedOrder.fiscalNumber || 'Aguardando'} | Série: {selectedOrder.fiscalSeries || '1'}</div>
+                    <div><strong>Protocolo:</strong> {selectedOrder.fiscalProtocol || 'Aguardando'}</div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <strong>Chave de Acesso:</strong> <code style={{ fontSize: '11px', backgroundColor: 'var(--neutral-100)', padding: '2px 4px', borderRadius: '2px', wordBreak: 'break-all' }}>{selectedOrder.fiscalAccessKey || 'Aguardando'}</code>
+                    </div>
+                    {selectedOrder.fiscalIssuedAt && (
+                      <div><strong>Emissão:</strong> {new Date(selectedOrder.fiscalIssuedAt).toLocaleString('pt-BR')}</div>
+                    )}
+                    <div><strong>Provedor/Ambiente:</strong> {selectedOrder.fiscalProvider} ({selectedOrder.fiscalEnvironment === 'production' ? 'Produção' : 'Homologação'})</div>
+                  </div>
+                )}
+
+                {/* Links para DANFE/XML */}
+                {selectedOrder.fiscalStatus === 'nota_autorizada' && (
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                    {selectedOrder.fiscalPdfUrl && (
+                      <a href={selectedOrder.fiscalPdfUrl} target="_blank" rel="noopener noreferrer" className="btn-detail" style={{ flex: 1, textAlign: 'center', fontSize: '12px', padding: '8px' }}>
+                        Visualizar DANFE (PDF)
+                      </a>
+                    )}
+                    {selectedOrder.fiscalXmlUrl && (
+                      <a href={selectedOrder.fiscalXmlUrl} target="_blank" rel="noopener noreferrer" className="btn-detail" style={{ flex: 1, textAlign: 'center', fontSize: '12px', padding: '8px' }}>
+                        Baixar XML
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Painel de Ações Fiscais */}
+                <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                  {/* Emitir Nota */}
+                  {['nota_nao_emitida', 'erro_emissao', 'nota_rejeitada'].includes(selectedOrder.fiscalStatus) && (
+                    <button 
+                      onClick={() => handleFiscalAction(selectedOrder.id, 'emit')}
+                      disabled={isFiscalLoading}
+                      className="btn-checkout"
+                      style={{ flex: 1, fontSize: '12px', padding: '10px', backgroundColor: 'var(--color-primary)' }}
+                    >
+                      {isFiscalLoading ? 'Processando...' : selectedOrder.fiscalStatus === 'nota_nao_emitida' ? 'Emitir Nota Fiscal' : 'Tentar Novamente (Emitir)'}
+                    </button>
+                  )}
+
+                  {/* Consultar Status */}
+                  {selectedOrder.fiscalStatus === 'nota_em_processamento' && (
+                    <button 
+                      onClick={() => handleFiscalAction(selectedOrder.id, 'query')}
+                      disabled={isFiscalLoading}
+                      className="btn-checkout"
+                      style={{ flex: 1, fontSize: '12px', padding: '10px', backgroundColor: 'var(--color-secondary)' }}
+                    >
+                      {isFiscalLoading ? 'Buscando...' : 'Consultar Status da Nota'}
+                    </button>
+                  )}
+
+                  {/* Cancelar Nota */}
+                  {selectedOrder.fiscalStatus === 'nota_autorizada' && !isCancelModalOpen && (
+                    <button 
+                      onClick={() => setIsCancelModalOpen(true)}
+                      className="btn-detail"
+                      style={{ flex: 1, fontSize: '12px', padding: '8px', color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                    >
+                      Cancelar Nota Fiscal
+                    </button>
+                  )}
+                </div>
+
+                {/* Sub-formulario de Justificativa de Cancelamento */}
+                {isCancelModalOpen && (
+                  <div style={{ border: '1px solid #fecaca', padding: '12px', borderRadius: '4px', backgroundColor: '#fef2f2', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+                    <h5 style={{ fontSize: '12px', fontWeight: '700', color: '#b91c1c' }}>Solicitar Cancelamento de NF-e</h5>
+                    <p style={{ fontSize: '11px', color: '#7f1d1d' }}>Tem certeza que deseja cancelar esta nota fiscal? Essa ação pode ter impacto fiscal e deve ser feita apenas com orientação do contador.</p>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', color: '#b91c1c' }}>Justificativa (Mínimo 15 caracteres)</label>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        style={{ padding: '6px', fontSize: '12px' }}
+                        placeholder="Ex: Pedido cancelado pelo cliente antes do envio." 
+                        value={fiscalJustification}
+                        onChange={(e) => setFiscalJustification(e.target.value)}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleFiscalAction(selectedOrder.id, 'cancel', { justification: fiscalJustification })}
+                        disabled={isFiscalLoading || fiscalJustification.trim().length < 15}
+                        className="btn-checkout"
+                        style={{ flex: 1, fontSize: '11px', padding: '6px 10px', backgroundColor: '#b91c1c' }}
+                      >
+                        {isFiscalLoading ? 'Cancelando...' : 'Confirmar Cancelamento'}
+                      </button>
+                      <button 
+                        onClick={() => { setIsCancelModalOpen(false); setFiscalJustification(''); }}
+                        className="btn-detail"
+                        style={{ fontSize: '11px', padding: '6px 10px', backgroundColor: 'white' }}
+                      >
+                        Voltar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Logs de Auditoria Fiscal */}
+                {selectedOrder.fiscalLogs && (
+                  <div style={{ marginTop: '10px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--neutral-500)', textTransform: 'uppercase' }}>Logs de Auditoria Fiscal</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '100px', overflowY: 'auto', border: '1px solid var(--neutral-200)', borderRadius: '4px', padding: '8px', marginTop: '4px', backgroundColor: 'white', fontSize: '11px' }}>
+                      {(() => {
+                        try {
+                          const logs = JSON.parse(selectedOrder.fiscalLogs);
+                          if (!logs.length) return <div style={{ color: 'var(--neutral-400)' }}>Nenhum log fiscal registrado.</div>;
+                          return logs.map((log, idx) => (
+                            <div key={idx} style={{ borderBottom: idx < logs.length - 1 ? '1px solid var(--neutral-100)' : 'none', paddingBottom: '4px', marginBottom: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--neutral-500)' }}>
+                                <span><strong>{log.action}</strong> ({log.admin})</span>
+                                <span>{new Date(log.timestamp).toLocaleString('pt-BR')}</span>
+                              </div>
+                              <div style={{ color: log.status === 'error' ? 'var(--color-danger)' : 'var(--neutral-700)', marginTop: '2px' }}>{log.message}</div>
+                            </div>
+                          ));
+                        } catch (e) {
+                          return <div style={{ color: 'var(--neutral-400)' }}>Erro ao exibir logs fiscais.</div>;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Configurações Administrativas do Pedido (Editar Status / Anotações Internas) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: 'var(--neutral-50)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--neutral-200)' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--neutral-700)', textTransform: 'uppercase' }}>Configurações Administrativas</h4>
@@ -393,11 +641,72 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
+                {/* Sub-formulario de Dados do Cliente e Endereço */}
+                <div style={{ borderTop: '1px dashed var(--neutral-200)', paddingTop: '14px', marginTop: '4px' }}>
+                  <h5 style={{ fontSize: '11px', fontWeight: '700', color: 'var(--neutral-600)', marginBottom: '10px', textTransform: 'uppercase' }}>Dados Cadastrais & Faturamento</h5>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Nome do Cliente</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>CPF ou CNPJ</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} placeholder="Ex: 000.000.000-00" value={customerCpfCnpj} onChange={(e) => setCustomerCpfCnpj(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>WhatsApp</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={customerWhatsapp} onChange={(e) => setCustomerWhatsapp(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>E-mail destinatário</label>
+                      <input type="email" className="form-input" style={{ padding: '6px' }} placeholder="cliente@email.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>CEP de Entrega</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} placeholder="55190-000" value={cep} onChange={(e) => setCep(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Rua</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={street} onChange={(e) => setStreet(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Número</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={number} onChange={(e) => setNumber(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Complemento</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={complement} onChange={(e) => setComplement(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr', gap: '10px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Bairro</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Cidade</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} value={city} onChange={(e) => setCity(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '11px', marginBottom: '2px' }}>Estado (UF)</label>
+                      <input type="text" className="form-input" style={{ padding: '6px' }} placeholder="Ex: PE" maxLength={2} value={state} onChange={(e) => setState(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
                 <button 
                   onClick={() => handleSaveOrderChanges(selectedOrder.id)}
                   disabled={savingStatus}
                   className="btn-checkout" 
-                  style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', fontSize: '13px', backgroundColor: 'var(--color-secondary)' }}
+                  style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', fontSize: '13px', backgroundColor: 'var(--color-secondary)', marginTop: '8px' }}
                 >
                   <Save size={14} /> {savingStatus ? 'Salvando...' : 'Salvar Alterações'}
                 </button>

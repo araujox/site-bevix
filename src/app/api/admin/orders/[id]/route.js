@@ -5,7 +5,21 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, internalNotes } = body;
+    const { 
+      status, 
+      internalNotes,
+      customerName,
+      customerWhatsapp,
+      customerCpfCnpj,
+      customerEmail,
+      cep,
+      street,
+      number,
+      neighborhood,
+      city,
+      state,
+      complement,
+    } = body;
 
     const existingOrder = await prisma.order.findUnique({
       where: { id },
@@ -20,6 +34,17 @@ export async function PUT(request, { params }) {
       data: {
         status: status !== undefined ? status : existingOrder.status,
         internalNotes: internalNotes !== undefined ? internalNotes : existingOrder.internalNotes,
+        customerName: customerName !== undefined ? customerName : existingOrder.customerName,
+        customerWhatsapp: customerWhatsapp !== undefined ? customerWhatsapp : existingOrder.customerWhatsapp,
+        customerCpfCnpj: customerCpfCnpj !== undefined ? customerCpfCnpj : existingOrder.customerCpfCnpj,
+        customerEmail: customerEmail !== undefined ? customerEmail : existingOrder.customerEmail,
+        cep: cep !== undefined ? cep : existingOrder.cep,
+        street: street !== undefined ? street : existingOrder.street,
+        number: number !== undefined ? number : existingOrder.number,
+        neighborhood: neighborhood !== undefined ? neighborhood : existingOrder.neighborhood,
+        city: city !== undefined ? city : existingOrder.city,
+        state: state !== undefined ? state : existingOrder.state,
+        complement: complement !== undefined ? complement : existingOrder.complement,
       },
       include: {
         items: true,
