@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && node -e \"try { require('child_process').execSync('npx prisma db push', { stdio: 'inherit' }); } catch(e) { console.log('Database push failed, continuing build...'); }\" && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
