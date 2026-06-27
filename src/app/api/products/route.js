@@ -3,6 +3,99 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request) {
   try {
+    // Auto-seed de produtos se o banco de dados estiver com 0 produtos
+    const productCount = await prisma.product.count();
+    if (productCount === 0) {
+      console.log('Nenhum produto cadastrado no banco. Executando semeadura automática de produtos...');
+      try {
+        let categories = await prisma.category.findMany();
+        if (categories.length === 0) {
+          const categoriesData = [
+            { name: 'Calças & Leggings', slug: 'calcas-leggings', order: 1 },
+            { name: 'Tops & Croppeds', slug: 'tops-croppeds', order: 2 },
+            { name: 'Shorts & Bermudas', slug: 'shorts-bermudas', order: 3 },
+          ];
+          for (const cat of categoriesData) {
+            await prisma.category.create({ data: cat });
+          }
+          categories = await prisma.category.findMany();
+        }
+
+        const catMap = {};
+        categories.forEach(c => {
+          catMap[c.slug] = c.id;
+        });
+
+        const productsToSeed = [
+          {
+            name: "Top Cropped Lastex Premium",
+            slug: "top-cropped-lastex-premium",
+            sku: "BV-001",
+            price: 49.90,
+            stock: 100,
+            sizes: "P,M,G",
+            colors: "Preto, Branco, Rosa",
+            mainImage: "/uploads/cropped-lastex.webp",
+            categoryId: catMap['tops-croppeds'] || categories[0].id,
+            description: "Top Cropped com lastex de alta qualidade, caimento perfeito no corpo. Ideal para treinos de alta performance.",
+            ncm: "61091000",
+            cfop: "5102",
+            cst: "102",
+            origin: 0,
+            unit: "UN",
+            weight: 0.120,
+            featured: true,
+          },
+          {
+            name: "Legging Fitness Empina Bumbum",
+            slug: "legging-fitness-empina-bumbum",
+            sku: "BV-002",
+            price: 89.90,
+            promotionalPrice: 79.90,
+            stock: 80,
+            sizes: "P,M,G,GG",
+            colors: "Cinza Mescla, Preto, Azul Marinho",
+            mainImage: "/uploads/vestido-longo.webp",
+            categoryId: catMap['calcas-leggings'] || categories[0].id,
+            description: "Calça Legging de alta compressão, tecido blackout zero transparência, ideal para agachamentos e treinos intensos.",
+            ncm: "61046200",
+            cfop: "5102",
+            cst: "102",
+            origin: 0,
+            unit: "UN",
+            weight: 0.280,
+            featured: true,
+          },
+          {
+            name: "Shorts Alfaiataria Comfort",
+            slug: "shorts-alfaiataria-comfort",
+            sku: "BV-003",
+            price: 59.90,
+            stock: 50,
+            sizes: "M,G",
+            colors: "Preto, Off White",
+            mainImage: "/uploads/short-alfaiataria.webp",
+            categoryId: catMap['shorts-bermudas'] || categories[0].id,
+            description: "Shorts confortável com modelagem premium, cós largo para modelação da cintura.",
+            ncm: "62046200",
+            cfop: "5102",
+            cst: "102",
+            origin: 0,
+            unit: "UN",
+            weight: 0.180,
+            featured: true,
+          }
+        ];
+
+        for (const prod of productsToSeed) {
+          await prisma.product.create({ data: prod });
+        }
+        console.log('Semeadura automática de produtos finalizada com sucesso.');
+      } catch (seedErr) {
+        console.error('Erro ao semear produtos automaticamente:', seedErr);
+      }
+    }
+
     const { searchParams } = new URL(request.url);
     const categorySlug = searchParams.get('category');
     const size = searchParams.get('size');
