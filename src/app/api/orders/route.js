@@ -7,6 +7,8 @@ export async function POST(request) {
     const {
       customerName,
       customerWhatsapp,
+      customerCpfCnpj,
+      customerEmail,
       cep,
       street,
       number,
@@ -166,6 +168,8 @@ export async function POST(request) {
         data: {
           customerName,
           customerWhatsapp,
+          customerCpfCnpj: customerCpfCnpj || '',
+          customerEmail: customerEmail || '',
           cep,
           street,
           number,

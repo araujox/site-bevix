@@ -262,6 +262,8 @@ export default function Home() {
   // Formulário do Cliente
   const [customerName, setCustomerName] = useState('');
   const [customerWhatsapp, setCustomerWhatsapp] = useState('');
+  const [customerCpfCnpj, setCustomerCpfCnpj] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [cep, setCep] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
@@ -628,6 +630,8 @@ export default function Home() {
       const payload = {
         customerName,
         customerWhatsapp,
+        customerCpfCnpj,
+        customerEmail,
         cep: deliveryType === 'correios' ? cep : '',
         street: deliveryType !== 'retirada' ? street : 'Retirada presencial',
         number: deliveryType !== 'retirada' ? number : '',
@@ -681,6 +685,8 @@ export default function Home() {
     message += `*DADOS DO CLIENTE:*\n`;
     message += `Nome: ${createdOrder.customerName}\n`;
     message += `WhatsApp: ${createdOrder.customerWhatsapp}\n`;
+    message += `CPF/CNPJ: ${createdOrder.customerCpfCnpj || 'Não informado'}\n`;
+    message += `E-mail: ${createdOrder.customerEmail || 'Não informado'}\n`;
     message += `CEP: ${createdOrder.cep || 'Não informado'}\n`;
     
     if (createdOrder.cep) {
@@ -1611,6 +1617,31 @@ export default function Home() {
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                     />
+                  </div>
+
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label className="form-label">CPF ou CNPJ (para Nota Fiscal)</label>
+                      <input 
+                        type="text" 
+                        required 
+                        className="form-input" 
+                        placeholder="Ex: 000.000.000-00" 
+                        value={customerCpfCnpj}
+                        onChange={(e) => setCustomerCpfCnpj(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">E-mail (para envio da NF-e)</label>
+                      <input 
+                        type="email" 
+                        required 
+                        className="form-input" 
+                        placeholder="Ex: seuemail@email.com" 
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                      />
+                    </div>
                   </div>
 
                   <div className="form-grid">
