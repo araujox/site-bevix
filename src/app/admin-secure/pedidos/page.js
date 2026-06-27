@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Search, Phone, Printer, Save, RefreshCw, X, 
-  ChevronDown, MessageSquare, AlertCircle, Calendar
+  ChevronDown, MessageSquare, AlertCircle, Calendar,
+  Trash2
 } from 'lucide-react';
 
 export default function AdminOrders() {
@@ -96,6 +97,30 @@ export default function AdminOrders() {
       alert('Erro ao salvar alterações.');
     } finally {
       setSavingStatus(false);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!confirm('Tem certeza de que deseja EXCLUIR este pedido permanentemente? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+        setSelectedOrder(null);
+        alert('Pedido excluído com sucesso!');
+      } else {
+        alert('Erro ao excluir: ' + (data.error || 'Erro desconhecido.'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao excluir pedido.');
     }
   };
 
@@ -349,6 +374,13 @@ export default function AdminOrders() {
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    className="btn-detail" 
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', color: 'var(--color-primary)' }} 
+                    onClick={() => handleDeleteOrder(selectedOrder.id)}
+                  >
+                    <Trash2 size={14} /> Excluir Pedido
+                  </button>
                   <button className="btn-detail" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px' }} onClick={() => handlePrintOrder(selectedOrder)}>
                     <Printer size={14} /> Imprimir
                   </button>

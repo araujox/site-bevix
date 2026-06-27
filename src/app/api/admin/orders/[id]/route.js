@@ -57,3 +57,26 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: 'Erro ao atualizar pedido' }, { status: 500 });
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    const { id } = await params;
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Pedido não encontrado' }, { status: 404 });
+    }
+
+    await prisma.order.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, message: 'Pedido excluído com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir pedido:', error);
+    return NextResponse.json({ error: 'Erro ao excluir pedido' }, { status: 500 });
+  }
+}
