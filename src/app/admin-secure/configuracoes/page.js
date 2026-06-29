@@ -20,6 +20,9 @@ export default function AdminSettings() {
   const [description, setDescription] = useState('');
   const [minimumItems, setMinimumItems] = useState(6);
   const [minimumValue, setMinimumValue] = useState(0.00);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceTitle, setMaintenanceTitle] = useState('Preparando Novidades!');
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [pixKey, setPixKey] = useState('');
   const [pixKeyType, setPixKeyType] = useState('TELEFONE');
   const [pixReceiverName, setPixReceiverName] = useState('');
@@ -55,6 +58,9 @@ export default function AdminSettings() {
           setDescription(data.description || '');
           setMinimumItems(data.minimumItems || 6);
           setMinimumValue(data.minimumValue || 0.00);
+          setMaintenanceMode(data.maintenanceMode || false);
+          setMaintenanceTitle(data.maintenanceTitle || 'Preparando Novidades!');
+          setMaintenanceMessage(data.maintenanceMessage || '');
           setPixKey(data.pixKey || '');
           setPixKeyType(data.pixKeyType || 'TELEFONE');
           setPixReceiverName(data.pixReceiverName || '');
@@ -134,6 +140,9 @@ export default function AdminSettings() {
       description,
       minimumItems: parseInt(minimumItems),
       minimumValue: parseFloat(minimumValue),
+      maintenanceMode,
+      maintenanceTitle,
+      maintenanceMessage,
       pixKey,
       pixKeyType,
       pixReceiverName,
@@ -273,6 +282,54 @@ export default function AdminSettings() {
             <label className="form-label">Descrição Curta da Loja (Sobre)</label>
             <textarea className="form-textarea" rows={3} placeholder="Descreva brevemente a história ou foco da sua loja..." value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
+        </div>
+
+        {/* Seção Nova: Modo Manutenção (Standby) */}
+        <div className="admin-card" style={{ marginTop: '20px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--neutral-700)', borderBottom: '1px solid var(--neutral-200)', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Modo Manutenção (Standby)
+          </h3>
+          <p style={{ fontSize: '12px', color: 'var(--neutral-500)', marginBottom: '16px' }}>
+            Ative esta opção para deixar o site temporariamente em standby (fora do ar). Os clientes não poderão ver ou comprar os produtos, ideal para quando estiver subindo coleções novas. O painel admin continuará funcionando normalmente.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <input 
+              type="checkbox" 
+              id="maintenanceModeCheckbox"
+              checked={maintenanceMode} 
+              onChange={(e) => setMaintenanceMode(e.target.checked)} 
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            <label htmlFor="maintenanceModeCheckbox" style={{ fontSize: '13px', fontWeight: '700', color: 'var(--neutral-800)', cursor: 'pointer' }}>
+              Ativar Modo Manutenção (Standby) no Site
+            </label>
+          </div>
+
+          {maintenanceMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="form-group">
+                <label className="form-label">Título da Tela de Manutenção</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="Ex: Coleção Nova Chegando!" 
+                  value={maintenanceTitle} 
+                  onChange={(e) => setMaintenanceTitle(e.target.value)} 
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Mensagem de Aviso aos Clientes</label>
+                <textarea 
+                  className="form-textarea" 
+                  rows={3} 
+                  placeholder="Explique o motivo da manutenção..." 
+                  value={maintenanceMessage} 
+                  onChange={(e) => setMaintenanceMessage(e.target.value)} 
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Seção 2: Configuração do Pix */}

@@ -139,6 +139,9 @@ model StoreSettings {
   description     String?
   minimumItems    Int     @default(6)
   minimumValue    Float   @default(0.00)
+  maintenanceMode    Boolean @default(false)
+  maintenanceTitle   String? @default("Preparando Novidades!")
+  maintenanceMessage String? @default("Estamos atualizando nosso catálogo com a nova coleção. Voltamos em breve com muitas novidades para você!")
   pixKey          String  @default("5511999999999")
   pixKeyType      String  @default("TELEFONE") // CPF, CNPJ, EMAIL, TELEFONE, ALEATORIA
   pixReceiverName String  @default("Recebedor Pix")

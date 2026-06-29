@@ -822,6 +822,147 @@ export default function Home() {
   const uniqueSizes = ['G', 'GG', 'Extra G', 'Tamanho único', 'A confirmar'];
   const uniqueColors = ['Preto', 'Verde militar', 'Azul marinho', 'Marrom', 'Açaí/Vinho', 'Açaí', 'Salmão', 'Terracota', 'Pink', 'Vermelho', 'Azul', 'Roxo', 'Verde acinzentado', 'Verde água', 'Azul royal'];
 
+  // --- MODO MANUTENÇÃO (STANDBY) ---
+  if (storeData?.settings?.maintenanceMode) {
+    const maintenanceTitle = storeData.settings.maintenanceTitle || 'Preparando Novidades!';
+    const maintenanceMessage = storeData.settings.maintenanceMessage || 'Estamos atualizando nosso catálogo. Voltamos em breve!';
+    const storeWhatsapp = storeData.settings.whatsapp || '5581999999999';
+    const storeInstagram = storeData.settings.instagram;
+
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#0f172a', // Slate 900
+        backgroundImage: 'radial-gradient(circle at top right, rgba(225, 29, 72, 0.15), transparent), radial-gradient(circle at bottom left, rgba(15, 23, 42, 0.9), transparent)',
+        color: '#f8fafc',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        padding: '24px',
+        textAlign: 'center'
+      }}>
+        {/* Main Card */}
+        <div style={{
+          maxWidth: '550px',
+          width: '100%',
+          backgroundColor: 'rgba(30, 41, 59, 0.7)', // Slate 800 with transparency
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          padding: '40px 30px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3)'
+        }}>
+          {/* Logo / Brand Name */}
+          <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+            {storeData?.settings?.logo ? (
+              <img 
+                src={storeData.settings.logo} 
+                alt={storeData.settings.storeName} 
+                style={{ maxHeight: '64px', objectFit: 'contain' }} 
+              />
+            ) : (
+              <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-primary, #e11d48)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                {storeData?.settings?.storeName || 'Bevix Moda Fitness'}
+              </h1>
+            )}
+          </div>
+
+          {/* Animated SVG Icon */}
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(225, 29, 72, 0.1)',
+            color: 'var(--color-primary, #e11d48)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="6" width="20" height="8" rx="1" />
+              <path d="M17 14v7" />
+              <path d="M7 14v7" />
+              <path d="M17 3v3" />
+              <path d="M7 3v3" />
+              <path d="M10 14v7" />
+              <path d="M14 14v7" />
+            </svg>
+          </div>
+
+          {/* Title */}
+          <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '14px', color: '#ffffff' }}>
+            {maintenanceTitle}
+          </h2>
+
+          {/* Description */}
+          <p style={{ fontSize: '15px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '32px' }}>
+            {maintenanceMessage}
+          </p>
+
+          {/* Action Links / Contacts */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <a 
+              href={`https://wa.me/${storeWhatsapp}`} 
+              target="_blank" 
+              rel="noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                backgroundColor: '#25d366',
+                color: '#ffffff',
+                textDecoration: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                transition: 'opacity 0.2s',
+                boxShadow: '0 4px 6px -1px rgba(37, 211, 102, 0.2)'
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Falar no WhatsApp
+            </a>
+
+            {storeInstagram && (
+              <a 
+                href={storeInstagram.startsWith('http') ? storeInstagram : `https://instagram.com/${storeInstagram.replace('@', '')}`}
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                Seguir no Instagram
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Small Footer */}
+        <div style={{ marginTop: '24px', fontSize: '12px', color: '#64748b' }}>
+          &copy; {new Date().getFullYear()} {storeData?.settings?.storeName || 'Bevix Moda Fitness'}. Todos os direitos reservados.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* 1. Header Fixo com Glassmorphism */}
