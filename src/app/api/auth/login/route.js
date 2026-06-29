@@ -31,6 +31,7 @@ async function autoSeedIfEmpty() {
         address: 'Rua Principal, 100',
         description: 'Bevix Moda Fitness - Sua loja de moda fitness no atacado e varejo.',
         minimumItems: 6,
+        minimumValue: 0.00,
         pixKey: '5581999999999',
         pixKeyType: 'TELEFONE',
         pixReceiverName: 'BEVIX MODA FITNESS',

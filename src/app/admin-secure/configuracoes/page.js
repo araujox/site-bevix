@@ -19,6 +19,7 @@ export default function AdminSettings() {
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
   const [minimumItems, setMinimumItems] = useState(6);
+  const [minimumValue, setMinimumValue] = useState(0.00);
   const [pixKey, setPixKey] = useState('');
   const [pixKeyType, setPixKeyType] = useState('TELEFONE');
   const [pixReceiverName, setPixReceiverName] = useState('');
@@ -53,6 +54,7 @@ export default function AdminSettings() {
           setAddress(data.address || '');
           setDescription(data.description || '');
           setMinimumItems(data.minimumItems || 6);
+          setMinimumValue(data.minimumValue || 0.00);
           setPixKey(data.pixKey || '');
           setPixKeyType(data.pixKeyType || 'TELEFONE');
           setPixReceiverName(data.pixReceiverName || '');
@@ -131,6 +133,7 @@ export default function AdminSettings() {
       address,
       description,
       minimumItems: parseInt(minimumItems),
+      minimumValue: parseFloat(minimumValue),
       pixKey,
       pixKeyType,
       pixReceiverName,
@@ -245,7 +248,7 @@ export default function AdminSettings() {
               <input type="email" className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             
-            <div className="form-grid">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">CNPJ (Opcional)</label>
                 <input type="text" className="form-input" placeholder="Ex: 12.345.678/0001-99" value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
@@ -253,6 +256,10 @@ export default function AdminSettings() {
               <div className="form-group">
                 <label className="form-label">Pedido Mínimo (Peças)</label>
                 <input type="number" required className="form-input" value={minimumItems} onChange={(e) => setMinimumItems(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Pedido Mínimo (Valor R$)</label>
+                <input type="number" step="0.01" required className="form-input" value={minimumValue} onChange={(e) => setMinimumValue(e.target.value)} />
               </div>
             </div>
           </div>

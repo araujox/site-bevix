@@ -603,7 +603,10 @@ export default function Home() {
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartSubtotal = cart.reduce((acc, item) => acc + item.subtotal, 0);
   const minItemsRequired = storeData?.settings?.minimumItems || 6;
-  const isMinimumReached = totalItems >= minItemsRequired;
+  const minValueRequired = storeData?.settings?.minimumValue || 0.00;
+  const isMinimumItemsReached = totalItems >= minItemsRequired;
+  const isMinimumValueReached = cartSubtotal >= minValueRequired;
+  const isMinimumReached = isMinimumItemsReached && isMinimumValueReached;
 
   // --- 6. Abrir Detalhes do Produto ---
   const openProductDetails = (product) => {
@@ -657,8 +660,13 @@ export default function Home() {
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isMinimumReached) {
+    if (!isMinimumItemsReached) {
       alert(`Erro: Seu carrinho possui ${totalItems} itens, o mínimo exigido é ${minItemsRequired} peças.`);
+      return;
+    }
+
+    if (!isMinimumValueReached) {
+      alert(`Erro: Seu carrinho possui R$ ${cartSubtotal.toFixed(2)}, o valor mínimo exigido para pedidos é R$ ${minValueRequired.toFixed(2)}.`);
       return;
     }
 
@@ -1603,21 +1611,47 @@ export default function Home() {
 
             {/* Barra de Progresso Pedido Mínimo */}
             {cart.length > 0 && (
-              <div className="minimum-order-banner">
-                <div className="min-order-status">
-                  <span>Mínimo de peças ({minItemsRequired})</span>
-                  <span>{totalItems} / {minItemsRequired}</span>
+              <div className="minimum-order-banner" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <div className="min-order-status">
+                    <span>Mínimo de peças ({minItemsRequired})</span>
+                    <span>{totalItems} / {minItemsRequired}</span>
+                  </div>
+                  <div className="progress-bar-bg">
+                    <div 
+                      className="progress-bar-fill"
+                      style={{ width: `${Math.min(100, (totalItems / minItemsRequired) * 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: `${Math.min(100, (totalItems / minItemsRequired) * 100)}%` }}
-                  />
-                </div>
+
+                {minValueRequired > 0 && (
+                  <div>
+                    <div className="min-order-status" style={{ marginTop: '2px' }}>
+                      <span>Valor Mínimo (R$ {minValueRequired.toFixed(2).replace('.', ',')})</span>
+                      <span>R$ {cartSubtotal.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div className="progress-bar-bg">
+                      <div 
+                        className="progress-bar-fill"
+                        style={{ 
+                          width: `${Math.min(100, (cartSubtotal / minValueRequired) * 100)}%`,
+                          backgroundColor: isMinimumValueReached ? '#10b981' : 'var(--color-primary, #e11d48)' 
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {!isMinimumReached && (
-                  <span style={{ fontSize: '11px', color: '#be123c', fontWeight: '500' }}>
-                    Adicione mais {minItemsRequired - totalItems} peças para liberar a finalização do pedido.
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px', color: '#be123c', fontWeight: '500', marginTop: '2px' }}>
+                    {!isMinimumItemsReached && (
+                      <span>• Adicione mais {minItemsRequired - totalItems} peças para liberar a finalização.</span>
+                    )}
+                    {!isMinimumValueReached && (
+                      <span>• Faltam R$ {(minValueRequired - cartSubtotal).toFixed(2).replace('.', ',')} para atingir o valor mínimo.</span>
+                    )}
+                  </div>
                 )}
               </div>
             )}

@@ -53,6 +53,7 @@ export async function GET() {
         storeName: 'NOME_DA_LOJA',
         whatsapp: '5581999999999',
         minimumItems: 6,
+        minimumValue: 0.00,
         primaryColor: '#e11d48',
         secondaryColor: '#1e293b',
       },

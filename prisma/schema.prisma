@@ -138,6 +138,7 @@ model StoreSettings {
   address         String?
   description     String?
   minimumItems    Int     @default(6)
+  minimumValue    Float   @default(0.00)
   pixKey          String  @default("5511999999999")
   pixKeyType      String  @default("TELEFONE") // CPF, CNPJ, EMAIL, TELEFONE, ALEATORIA
   pixReceiverName String  @default("Recebedor Pix")
