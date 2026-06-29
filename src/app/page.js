@@ -262,6 +262,7 @@ export default function Home() {
   // Formulário do Cliente
   const [customerName, setCustomerName] = useState('');
   const [customerWhatsapp, setCustomerWhatsapp] = useState('');
+  const [customerPhonePrefix, setCustomerPhonePrefix] = useState('55');
   const [customerCpfCnpj, setCustomerCpfCnpj] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [cep, setCep] = useState('');
@@ -283,6 +284,7 @@ export default function Home() {
   const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
   const [visitorName, setVisitorName] = useState('');
   const [visitorWhatsapp, setVisitorWhatsapp] = useState('');
+  const [visitorPhonePrefix, setVisitorPhonePrefix] = useState('55');
   const [visitorCity, setVisitorCity] = useState('');
   const [submittingVisitor, setSubmittingVisitor] = useState(false);
 
@@ -629,6 +631,9 @@ export default function Home() {
       return;
     }
     
+    const cleanNumber = visitorWhatsapp.replace(/\D/g, '');
+    const fullWhatsapp = `${visitorPhonePrefix}${cleanNumber}`;
+    
     setSubmittingVisitor(true);
     try {
       const res = await fetch('/api/visitors', {
@@ -636,7 +641,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: visitorName,
-          whatsapp: visitorWhatsapp,
+          whatsapp: fullWhatsapp,
           city: visitorCity,
         }),
       });
@@ -682,9 +687,12 @@ export default function Home() {
         finalDeliveryMethod = 'Retirada na Loja';
       }
 
+      const cleanNumber = customerWhatsapp.replace(/\D/g, '');
+      const fullWhatsapp = `${customerPhonePrefix}${cleanNumber}`;
+
       const payload = {
         customerName,
-        customerWhatsapp,
+        customerWhatsapp: fullWhatsapp,
         customerCpfCnpj,
         customerEmail,
         cep: deliveryType === 'correios' ? cep : '',
@@ -1848,14 +1856,33 @@ export default function Home() {
 
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ fontSize: '12px', fontWeight: '600' }}>WhatsApp (com DDD)</label>
-                <input 
-                  type="tel" 
-                  required 
-                  className="form-input" 
-                  placeholder="Ex: 81999999999" 
-                  value={visitorWhatsapp}
-                  onChange={(e) => setVisitorWhatsapp(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select 
+                    className="form-input" 
+                    style={{ width: '90px', padding: '10px 4px', textAlign: 'center', cursor: 'pointer' }}
+                    value={visitorPhonePrefix}
+                    onChange={(e) => setVisitorPhonePrefix(e.target.value)}
+                  >
+                    <option value="55">+55 🇧🇷</option>
+                    <option value="1">+1 🇺🇸</option>
+                    <option value="351">+351 🇵🇹</option>
+                    <option value="34">+34 🇪🇸</option>
+                    <option value="54">+54 🇦🇷</option>
+                    <option value="598">+598 🇺🇾</option>
+                    <option value="595">+595 🇵🇾</option>
+                    <option value="56">+56 🇨🇱</option>
+                    <option value="57">+57 🇨🇴</option>
+                  </select>
+                  <input 
+                    type="tel" 
+                    required 
+                    className="form-input" 
+                    style={{ flex: 1 }}
+                    placeholder="Ex: 999999999" 
+                    value={visitorWhatsapp}
+                    onChange={(e) => setVisitorWhatsapp(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
@@ -1933,14 +1960,33 @@ export default function Home() {
                   <div className="form-grid">
                     <div className="form-group">
                       <label className="form-label">WhatsApp (com DDD)</label>
-                      <input 
-                        type="tel" 
-                        required 
-                        className="form-input" 
-                        placeholder="Ex: 81998609447" 
-                        value={customerWhatsapp}
-                        onChange={(e) => setCustomerWhatsapp(e.target.value)}
-                      />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select 
+                          className="form-input" 
+                          style={{ width: '90px', padding: '10px 4px', textAlign: 'center', cursor: 'pointer' }}
+                          value={customerPhonePrefix}
+                          onChange={(e) => setCustomerPhonePrefix(e.target.value)}
+                        >
+                          <option value="55">+55 🇧🇷</option>
+                          <option value="1">+1 🇺🇸</option>
+                          <option value="351">+351 🇵🇹</option>
+                          <option value="34">+34 🇪🇸</option>
+                          <option value="54">+54 🇦🇷</option>
+                          <option value="598">+598 🇺🇾</option>
+                          <option value="595">+595 🇵🇾</option>
+                          <option value="56">+56 🇨🇱</option>
+                          <option value="57">+57 🇨🇴</option>
+                        </select>
+                        <input 
+                          type="tel" 
+                          required 
+                          className="form-input" 
+                          style={{ flex: 1 }}
+                          placeholder="Ex: 999999999" 
+                          value={customerWhatsapp}
+                          onChange={(e) => setCustomerWhatsapp(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div className="form-group">
                       <label className="form-label">Forma de Envio</label>
