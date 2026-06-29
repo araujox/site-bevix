@@ -175,3 +175,11 @@ model DeliveryMethod {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 }
+
+model Visitor {
+  id        String   @id @default(uuid())
+  name      String
+  whatsapp  String
+  city      String
+  createdAt DateTime @default(now())
+}

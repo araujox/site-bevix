@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Package, LayoutDashboard, ShoppingCart, FolderTree, 
-  Image as ImageIcon, Settings as SettingsIcon, LogOut, Menu, X
+  Image as ImageIcon, Settings as SettingsIcon, LogOut, Menu, X, Users
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,6 +40,7 @@ export default function AdminLayout({ children }) {
     { name: 'Dashboard', path: '/admin-secure', icon: <LayoutDashboard size={18} /> },
     { name: 'Produtos', path: '/admin-secure/produtos', icon: <Package size={18} /> },
     { name: 'Pedidos', path: '/admin-secure/pedidos', icon: <ShoppingCart size={18} /> },
+    { name: 'Visitantes', path: '/admin-secure/visitantes', icon: <Users size={18} /> },
     { name: 'Categorias', path: '/admin-secure/categorias', icon: <FolderTree size={18} /> },
     { name: 'Banners', path: '/admin-secure/banners', icon: <ImageIcon size={18} /> },
     { name: 'Configurações', path: '/admin-secure/configuracoes', icon: <SettingsIcon size={18} /> },

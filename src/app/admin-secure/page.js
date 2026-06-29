@@ -179,7 +179,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { stats, recentOrders, fiscalStats } = data;
+  const { stats, recentOrders, recentVisitors, fiscalStats } = data;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -225,8 +225,8 @@ export default function AdminDashboard() {
 
         <div className="stat-card" style={{ display: 'flex', justifyContent: 'space-between', padding: '20px' }}>
           <div>
-            <div className="stat-label">Visitas na Loja</div>
-            <div className="stat-value" style={{ fontSize: '22px', marginTop: '6px' }}>{stats.visits || 1450}</div>
+            <div className="stat-label">Visualizações Reais</div>
+            <div className="stat-value" style={{ fontSize: '22px', marginTop: '6px' }}>{stats.visits}</div>
           </div>
           <div className="stat-icon" style={{ backgroundColor: 'var(--neutral-100)', color: 'var(--color-secondary)' }}><Eye size={20} /></div>
         </div>
@@ -322,66 +322,104 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* 3. Tabela de Pedidos Recentes */}
-      <div className="admin-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Pedidos Recentes</h3>
-          <Link href="/admin-secure/pedidos" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            Ver todos <ArrowRight size={14} />
-          </Link>
+      {/* 3. Grid de Pedidos e Visitantes Recentes */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', marginTop: '24px' }}>
+        
+        {/* Pedidos Recentes */}
+        <div className="admin-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Pedidos Recentes</h3>
+            <Link href="/admin-secure/pedidos" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              Ver todos <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {recentOrders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '30px', color: 'var(--neutral-400)' }}>
+              Nenhum pedido registrado.
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => {
+                    const orderCode = order.id.slice(0, 8).toUpperCase();
+                    return (
+                      <tr key={order.id}>
+                        <td style={{ fontWeight: '700' }}>#{orderCode}</td>
+                        <td>
+                          <div style={{ fontWeight: '600', color: 'var(--neutral-800)' }}>{order.customerName}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--neutral-400)' }}>{order.customerWhatsapp}</div>
+                        </td>
+                        <td style={{ fontWeight: '700' }}>R$ {order.total.toFixed(2)}</td>
+                        <td>
+                          <span className={getStatusBadgeClass(order.status)}>
+                            {translateStatus(order.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {recentOrders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '30px', color: 'var(--neutral-400)' }}>
-            Nenhum pedido registrado no sistema ainda.
+        {/* Visitantes Recentes */}
+        <div className="admin-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--neutral-700)' }}>Visualizações Recentes (Acessos)</h3>
+            <Link href="/admin-secure/visitantes" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              Ver todos <ArrowRight size={14} />
+            </Link>
           </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Pedido</th>
-                  <th>Cliente</th>
-                  <th>Data</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.map((order) => {
-                  const dateStr = new Date(order.createdAt).toLocaleDateString('pt-BR');
-                  const orderCode = order.id.slice(0, 8).toUpperCase();
-                  return (
-                    <tr key={order.id}>
-                      <td style={{ fontWeight: '700' }}>#{orderCode}</td>
+
+          {!recentVisitors || recentVisitors.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '30px', color: 'var(--neutral-400)' }}>
+              Nenhum acesso registrado ainda.
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>WhatsApp</th>
+                    <th>Cidade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentVisitors.map((visitor) => (
+                    <tr key={visitor.id}>
+                      <td style={{ fontWeight: '600', color: 'var(--neutral-800)' }}>{visitor.name}</td>
                       <td>
-                        <div style={{ fontWeight: '600', color: 'var(--neutral-800)' }}>{order.customerName}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--neutral-400)' }}>{order.customerWhatsapp}</div>
-                      </td>
-                      <td>{dateStr}</td>
-                      <td style={{ fontWeight: '700' }}>R$ {order.total.toFixed(2)}</td>
-                      <td>
-                        <span className={getStatusBadgeClass(order.status)}>
-                          {translateStatus(order.status)}
-                        </span>
-                      </td>
-                      <td>
-                        <Link 
-                          href="/admin-secure/pedidos" 
-                          className="btn-detail" 
-                          style={{ padding: '6px 12px', fontSize: '12px' }}
+                        <a 
+                          href={`https://wa.me/${visitor.whatsapp.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          style={{ color: '#25d366', fontWeight: '600', textDecoration: 'none' }}
                         >
-                          Ver Detalhes
-                        </Link>
+                          {visitor.whatsapp}
+                        </a>
                       </td>
+                      <td style={{ color: 'var(--neutral-500)' }}>{visitor.city}</td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </div>
 
     </div>

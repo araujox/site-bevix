@@ -5,7 +5,7 @@ import {
   ShoppingCart, Search, X, Plus, Minus, Trash2, 
   Copy, Check, MapPin, Truck, CreditCard, ArrowRight, 
   Mail, Phone, Info, DollarSign, Package, 
-  Eye, Filter, CheckCircle, ChevronLeft, ChevronRight
+  Eye, Filter, CheckCircle, ChevronLeft, ChevronRight, Users
 } from 'lucide-react';
 
 const Instagram = ({ size = 24, ...props }) => (
@@ -279,6 +279,13 @@ export default function Home() {
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
+  // Modal de Boas-vindas (Identificação de Visitante)
+  const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
+  const [visitorName, setVisitorName] = useState('');
+  const [visitorWhatsapp, setVisitorWhatsapp] = useState('');
+  const [visitorCity, setVisitorCity] = useState('');
+  const [submittingVisitor, setSubmittingVisitor] = useState(false);
+
   // Buscar CEP e calcular frete
   const handleCepChange = async (val) => {
     const clean = val.replace(/\D/g, '');
@@ -377,6 +384,11 @@ export default function Home() {
 
   useEffect(() => {
     fetchStoreInfo();
+    // Verificar se o visitante já se identificou no localStorage
+    const savedVisitorId = localStorage.getItem('bevix_visitor_id');
+    if (!savedVisitorId) {
+      setIsVisitorModalOpen(true);
+    }
   }, []);
 
   // --- 2. Carregar e Filtrar Produtos ---
@@ -604,6 +616,41 @@ export default function Home() {
     setSelectedColorOption(colors[0]?.trim() || '');
     setIsColorToConfirm(false);
     setQuantityOption(1);
+  };
+
+  // --- Visitor Identification Submit ---
+  const handleVisitorSubmit = async (e) => {
+    e.preventDefault();
+    if (!visitorName || !visitorWhatsapp || !visitorCity) {
+      alert('Por favor, preencha todos os campos.');
+      return;
+    }
+    
+    setSubmittingVisitor(true);
+    try {
+      const res = await fetch('/api/visitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: visitorName,
+          whatsapp: visitorWhatsapp,
+          city: visitorCity,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('bevix_visitor_id', data.visitorId);
+        setIsVisitorModalOpen(false);
+      } else {
+        alert(data.error || 'Erro ao registrar acesso. Tente novamente.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao registrar acesso.');
+    } finally {
+      setSubmittingVisitor(false);
+    }
   };
 
   // --- 7. Checkout e WhatsApp Redirect ---
@@ -1593,6 +1640,70 @@ export default function Home() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Visitor Gate Modal */}
+      {isVisitorModalOpen && (
+        <div className="modal-overlay" style={{ zIndex: 9999, backdropFilter: 'blur(8px)' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ maxWidth: '450px', width: '90%', animation: 'scaleUp 0.3s ease-out' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#ffe4e6', color: 'var(--color-primary, #e11d48)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <Users size={28} />
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--neutral-800)', marginBottom: '8px' }}>Seja bem-vindo(a)!</h2>
+              <p style={{ fontSize: '13px', color: 'var(--neutral-500)', lineHeight: '1.5' }}>
+                Para acessar nosso catálogo completo de moda fitness no atacado e varejo, por favor identifique-se abaixo.
+              </p>
+            </div>
+
+            <form onSubmit={handleVisitorSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontSize: '12px', fontWeight: '600' }}>Seu Nome Completo</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="form-input" 
+                  placeholder="Ex: Amanda Souza" 
+                  value={visitorName}
+                  onChange={(e) => setVisitorName(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontSize: '12px', fontWeight: '600' }}>WhatsApp (com DDD)</label>
+                <input 
+                  type="tel" 
+                  required 
+                  className="form-input" 
+                  placeholder="Ex: 81999999999" 
+                  value={visitorWhatsapp}
+                  onChange={(e) => setVisitorWhatsapp(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontSize: '12px', fontWeight: '600' }}>Sua Cidade / Estado</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="form-input" 
+                  placeholder="Ex: Santa Cruz do Capibaribe - PE" 
+                  value={visitorCity}
+                  onChange={(e) => setVisitorCity(e.target.value)}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={submittingVisitor}
+                className="btn-checkout" 
+                style={{ width: '100%', padding: '12px', marginTop: '8px', fontSize: '14px', fontWeight: '600', backgroundColor: 'var(--color-primary, #e11d48)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                {submittingVisitor ? 'Acessando...' : 'Acessar Catálogo'}
+              </button>
+            </form>
           </div>
         </div>
       )}

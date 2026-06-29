@@ -94,9 +94,11 @@ export async function GET() {
       });
     }
 
-    const settings = await prisma.storeSettings.findUnique({
-      where: { id: 'settings' },
-      select: { visits: true }
+    // Obter visualizações reais e lista de visitantes recentes
+    const realVisitsCount = await prisma.visitor.count();
+    const recentVisitors = await prisma.visitor.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({
@@ -106,7 +108,7 @@ export async function GET() {
         totalOrders,
         pendingOrders,
         totalSales,
-        visits: settings?.visits || 1450,
+        visits: realVisitsCount,
       },
       fiscalStats: {
         authorized: fiscalAuthorized,
@@ -117,6 +119,7 @@ export async function GET() {
         totalInvoiced: totalInvoiced,
       },
       recentOrders,
+      recentVisitors,
       chartData,
     });
   } catch (error) {
